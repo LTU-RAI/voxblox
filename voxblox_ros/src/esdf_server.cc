@@ -1,6 +1,6 @@
-#include "voxblox_ros/esdf_server.h"
+#include <voxblox_ros/conversions.h>
 
-#include "voxblox_ros/conversions.h"
+#include "voxblox_ros/esdf_server.h"
 #include "voxblox_ros/ros_params.h"
 
 namespace voxblox {
@@ -240,9 +240,7 @@ void EsdfServer::esdfMapCallback(const voxblox_msgs::Layer& layer_msg) {
     ROS_ERROR_THROTTLE(10, "Got an invalid ESDF map message!");
   } else {
     ROS_INFO_ONCE("Got an ESDF map from ROS topic!");
-    if (publish_pointclouds_) {
-      publishPointclouds();
-    }
+    publishPointclouds();
   }
 }
 

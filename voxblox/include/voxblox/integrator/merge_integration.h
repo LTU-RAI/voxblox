@@ -7,10 +7,11 @@
 
 #include <glog/logging.h>
 
+#include "voxblox/interpolator/interpolator.h"
+
 #include "voxblox/core/common.h"
 #include "voxblox/core/layer.h"
 #include "voxblox/core/voxel.h"
-#include "voxblox/interpolator/interpolator.h"
 
 namespace voxblox {
 

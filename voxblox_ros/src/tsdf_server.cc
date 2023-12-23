@@ -1,10 +1,9 @@
-#include "voxblox_ros/tsdf_server.h"
-
 #include <minkindr_conversions/kindr_msg.h>
 #include <minkindr_conversions/kindr_tf.h>
-
 #include "voxblox_ros/conversions.h"
 #include "voxblox_ros/ros_params.h"
+
+#include "voxblox_ros/tsdf_server.h"
 
 namespace voxblox {
 
@@ -36,6 +35,7 @@ TsdfServer::TsdfServer(const ros::NodeHandle& nh,
       cache_mesh_(false),
       enable_icp_(false),
       accumulate_icp_corrections_(true),
+      occupancy_min_distance_voxel_size_factor_(1.0),
       pointcloud_queue_size_(1),
       num_subscribers_tsdf_map_(0),
       transformer_(nh, nh_private) {
@@ -176,6 +176,10 @@ void TsdfServer::getServerConfigFromRosParam(
   nh_private.param("enable_icp", enable_icp_, enable_icp_);
   nh_private.param("accumulate_icp_corrections", accumulate_icp_corrections_,
                    accumulate_icp_corrections_);
+
+  nh_private.param("occupancy_min_distance_voxel_size_factor",
+                   occupancy_min_distance_voxel_size_factor_,
+                   occupancy_min_distance_voxel_size_factor_);
 
   nh_private.param("verbose", verbose_, verbose_);
 
@@ -438,8 +442,11 @@ void TsdfServer::publishTsdfSurfacePoints() {
 void TsdfServer::publishTsdfOccupiedNodes() {
   // Create a pointcloud with distance = intensity.
   visualization_msgs::MarkerArray marker_array;
-  createOccupancyBlocksFromTsdfLayer(tsdf_map_->getTsdfLayer(), world_frame_,
-                                     &marker_array);
+  createOccupancyBlocksFromTsdfLayer(
+      tsdf_map_->getTsdfLayer(), world_frame_,
+      tsdf_map_->getTsdfLayer().voxel_size() *
+          occupancy_min_distance_voxel_size_factor_,
+      &marker_array);
   occupancy_marker_pub_.publish(marker_array);
 }
 

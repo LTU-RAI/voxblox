@@ -430,12 +430,13 @@ inline void createDistancePointcloudFromEsdfLayerSlice(
 
 inline void createOccupancyBlocksFromTsdfLayer(
     const Layer<TsdfVoxel>& layer, const std::string& frame_id,
+    const FloatingPoint occupied_voxel_min_distance,
     visualization_msgs::MarkerArray* marker_array) {
   CHECK_NOTNULL(marker_array);
   createOccupancyBlocksFromLayer<TsdfVoxel>(
       layer,
       std::bind(visualizeOccupiedTsdfVoxels, std::placeholders::_1,
-                std::placeholders::_2, layer.voxel_size()),
+                std::placeholders::_2, occupied_voxel_min_distance),
       frame_id, marker_array);
 }
 

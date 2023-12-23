@@ -1,10 +1,6 @@
 #ifndef VOXBLOX_ROS_TSDF_SERVER_H_
 #define VOXBLOX_ROS_TSDF_SERVER_H_
 
-#include <memory>
-#include <queue>
-#include <string>
-
 #include <pcl/conversions.h>
 #include <pcl/filters/filter.h>
 #include <pcl/point_types.h>
@@ -15,6 +11,9 @@
 #include <std_srvs/Empty.h>
 #include <tf/transform_broadcaster.h>
 #include <visualization_msgs/MarkerArray.h>
+#include <memory>
+#include <queue>
+#include <string>
 
 #include <voxblox/alignment/icp.h>
 #include <voxblox/core/tsdf_map.h>
@@ -97,7 +96,6 @@ class TsdfServer {
   void publishMapEvent(const ros::TimerEvent& event);
 
   std::shared_ptr<TsdfMap> getTsdfMapPtr() { return tsdf_map_; }
-  std::shared_ptr<const TsdfMap> getTsdfMapPtr() const { return tsdf_map_; }
 
   /// Accessors for setting and getting parameters.
   double getSliceLevel() const { return slice_level_; }
@@ -223,6 +221,8 @@ class TsdfServer {
    * iteration.
    */
   bool accumulate_icp_corrections_;
+
+  FloatingPoint occupancy_min_distance_voxel_size_factor_;
 
   /// Subscriber settings.
   int pointcloud_queue_size_;

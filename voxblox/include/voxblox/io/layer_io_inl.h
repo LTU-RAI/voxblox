@@ -1,11 +1,11 @@
-#ifndef VOXBLOX_IO_LAYER_IO_INL_H_
-#define VOXBLOX_IO_LAYER_IO_INL_H_
+#ifndef VOXBLOX_CORE_IO_LAYER_IO_INL_H_
+#define VOXBLOX_CORE_IO_LAYER_IO_INL_H_
 
 #include <fstream>
-#include <string>
 
-#include "voxblox/Block.pb.h"
-#include "voxblox/Layer.pb.h"
+#include "./Block.pb.h"
+#include "./Layer.pb.h"
+
 #include "voxblox/utils/protobuf_utils.h"
 
 namespace voxblox {
@@ -29,15 +29,15 @@ bool LoadBlocksFromFile(
 
   // Byte offset result, used to keep track where we are in the file if
   // necessary.
-  uint64_t tmp_byte_offset = 0;
+  uint32_t tmp_byte_offset = 0;
 
   bool layer_found = false;
 
   do {
     // Get number of messages
     uint32_t num_protos;
-    if (!utils::readProtoMsgCountFromStream(&proto_file, &num_protos,
-                                            &tmp_byte_offset)) {
+    if (!utils::readProtoMsgCountToStream(&proto_file, &num_protos,
+                                          &tmp_byte_offset)) {
       LOG(ERROR) << "Could not read number of messages.";
       return false;
     }
@@ -104,8 +104,8 @@ template <typename VoxelType>
 bool LoadBlocksFromStream(
     const size_t num_blocks,
     typename Layer<VoxelType>::BlockMergingStrategy strategy,
-    std::istream* proto_file_ptr, Layer<VoxelType>* layer_ptr,
-    uint64_t* tmp_byte_offset_ptr) {
+    std::fstream* proto_file_ptr, Layer<VoxelType>* layer_ptr,
+    uint32_t* tmp_byte_offset_ptr) {
   CHECK_NOTNULL(proto_file_ptr);
   CHECK_NOTNULL(layer_ptr);
   CHECK_NOTNULL(tmp_byte_offset_ptr);
@@ -143,15 +143,15 @@ bool LoadLayer(const std::string& file_path, const bool multiple_layer_support,
 
   // Byte offset result, used to keep track where we are in the file if
   // necessary.
-  uint64_t tmp_byte_offset = 0;
+  uint32_t tmp_byte_offset = 0;
 
   bool layer_found = false;
 
   do {
     // Get number of messages
     uint32_t num_protos;
-    if (!utils::readProtoMsgCountFromStream(&proto_file, &num_protos,
-                                            &tmp_byte_offset)) {
+    if (!utils::readProtoMsgCountToStream(&proto_file, &num_protos,
+                                          &tmp_byte_offset)) {
       LOG(ERROR) << "Could not read number of messages.";
       return false;
     }
@@ -244,4 +244,4 @@ bool SaveLayerSubset(const Layer<VoxelType>& layer,
 }  // namespace io
 }  // namespace voxblox
 
-#endif  // VOXBLOX_IO_LAYER_IO_INL_H_
+#endif  // VOXBLOX_CORE_IO_LAYER_IO_INL_H_
