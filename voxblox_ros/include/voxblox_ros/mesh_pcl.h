@@ -30,7 +30,6 @@
 
 #include <pcl/point_types.h>
 #include <pcl_conversions/pcl_conversions.h>
-#include <pcl_ros/point_cloud.h>
 
 #include <voxblox/core/common.h>
 #include <voxblox/mesh/mesh_layer.h>
@@ -50,7 +49,7 @@ inline void toPCLPolygonMesh(
 
   Mesh mesh;
   convertMeshLayerToMesh(mesh_layer, &mesh, simplify_and_connect_mesh,
-                             vertex_proximity_threshold);
+                         vertex_proximity_threshold);
 
   // add points
   pointcloud.reserve(mesh.vertices.size());

@@ -1,18 +1,18 @@
+#include "voxblox/utils/protobuf_utils.h"
+
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/io/zero_copy_stream.h>
 #include <google/protobuf/io/zero_copy_stream_impl.h>
 
-#include "voxblox/utils/protobuf_utils.h"
-
 namespace voxblox {
 
 namespace utils {
-bool readProtoMsgCountToStream(std::fstream* stream_in, uint32_t* message_count,
-                               uint32_t* byte_offset) {
+bool readProtoMsgCountFromStream(std::istream* stream_in,
+                                 uint32_t* message_count,
+                                 uint64_t* byte_offset) {
   CHECK_NOTNULL(stream_in);
   CHECK_NOTNULL(message_count);
   CHECK_NOTNULL(byte_offset);
-  CHECK(stream_in->is_open());
   stream_in->clear();
   stream_in->seekg(*byte_offset, std::ios::beg);
   google::protobuf::io::IstreamInputStream raw_in(stream_in);
@@ -37,13 +37,12 @@ bool writeProtoMsgCountToStream(uint32_t message_count,
   return true;
 }
 
-bool readProtoMsgFromStream(std::fstream* stream_in,
+bool readProtoMsgFromStream(std::istream* stream_in,
                             google::protobuf::Message* message,
-                            uint32_t* byte_offset) {
+                            uint64_t* byte_offset) {
   CHECK_NOTNULL(stream_in);
   CHECK_NOTNULL(message);
   CHECK_NOTNULL(byte_offset);
-  CHECK(stream_in->is_open());
 
   stream_in->clear();
   stream_in->seekg(*byte_offset, std::ios::beg);
@@ -83,7 +82,7 @@ bool writeProtoMsgToStream(const google::protobuf::Message& message,
   CHECK(stream_out->is_open());
   google::protobuf::io::OstreamOutputStream raw_out(stream_out);
   google::protobuf::io::CodedOutputStream coded_out(&raw_out);
-  const uint32_t size_bytes = message.ByteSize();
+  const uint32_t size_bytes = message.ByteSizeLong();
   coded_out.WriteVarint32(size_bytes);
   uint8_t* buffer = coded_out.GetDirectBufferForNBytesAndAdvance(size_bytes);
   if (buffer != nullptr) {

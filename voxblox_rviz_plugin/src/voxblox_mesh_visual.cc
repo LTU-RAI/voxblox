@@ -1,10 +1,11 @@
+#include "voxblox_rviz_plugin/voxblox_mesh_visual.h"
+
 #include <limits>
 
-#include <OGRE/OgreSceneManager.h>
-#include <OGRE/OgreSceneNode.h>
-#include <voxblox/mesh/mesh_utils.h>
+#include <OgreSceneManager.h>
+#include <OgreSceneNode.h>
 
-#include "voxblox_rviz_plugin/voxblox_mesh_visual.h"
+#include <voxblox/mesh/mesh_utils.h>
 
 namespace voxblox_rviz_plugin {
 
@@ -25,8 +26,9 @@ VoxbloxMeshVisual::~VoxbloxMeshVisual() {
   }
 }
 
-void VoxbloxMeshVisual::setMessage(const voxblox_msgs::Mesh::ConstPtr& msg) {
-  for (const voxblox_msgs::MeshBlock& mesh_block : msg->mesh_blocks) {
+void VoxbloxMeshVisual::setMessage(
+    voxblox_msgs::msg::Mesh::ConstSharedPtr msg) {
+  for (const voxblox_msgs::msg::MeshBlock& mesh_block : msg->mesh_blocks) {
     const voxblox::BlockIndex index(mesh_block.index[0], mesh_block.index[1],
                                     mesh_block.index[2]);
 

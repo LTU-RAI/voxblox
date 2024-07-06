@@ -1,17 +1,18 @@
 #ifndef VOXBLOX_CORE_LAYER_H_
 #define VOXBLOX_CORE_LAYER_H_
 
-#include <glog/logging.h>
 #include <memory>
 #include <string>
 #include <utility>
 
-#include "./Block.pb.h"
-#include "./Layer.pb.h"
+#include <glog/logging.h>
+
 #include "voxblox/core/block.h"
 #include "voxblox/core/block_hash.h"
 #include "voxblox/core/common.h"
 #include "voxblox/core/voxel.h"
+#include "voxblox_proto/Block.pb.h"
+#include "voxblox_proto/Layer.pb.h"
 
 namespace voxblox {
 

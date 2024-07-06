@@ -7,15 +7,15 @@
 #include <memory>
 #include <vector>
 
-#include "./Block.pb.h"
 #include "voxblox/core/common.h"
+#include "voxblox_proto/Block.pb.h"
 
 namespace voxblox {
 
 namespace Update {
 /// Status of which derived things still need to be updated.
 enum Status { kMap, kMesh, kEsdf, kCount };
-}
+}  // namespace Update
 
 /** An n x n x n container holding VoxelType. It is aware of its 3D position and
  * contains functions for accessing voxels by position and index */
