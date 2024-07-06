@@ -47,6 +47,25 @@ def generate_launch_description():
             {'mesh_filename': launch.substitutions.LaunchConfiguration('bag_file')}
         ],
     )
+    esdf_server_node = Node(
+        package='voxblox_ros',
+        executable='esdf_server',
+        name='esdf_voxblox_node',
+        output='screen',
+        arguments=['-alsologtostderr'],
+        # arguments=['-alsologtostderr', '--ros-args', '--log-level', 'debug'],
+        remappings=[('pointcloud', '/velodyne_points')],
+        parameters=[
+            {'clear_sphere_for_planning_': False},
+            {'publish_esdf_map': True},
+            {'publish_traversable': True},
+            {'traversability_radius': '1.0'},
+            {'enable_icp': True},
+            {'incremental_update': True},
+            {'num_subscribers_esdf_map': 1},
+            {'verbose': True},
+        ],
+    )
     
     play_bag_process = ExecuteProcess(
         cmd=['ros2', 'bag', 'play', LaunchConfiguration("bag_file")],
@@ -63,6 +82,7 @@ def generate_launch_description():
         rviz_config_file_arg,
 
         tsdf_server_node,
+        esdf_server_node,
         play_bag_process,
         start_rviz_process,
     ]
