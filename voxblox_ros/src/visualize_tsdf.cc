@@ -204,6 +204,7 @@ int main(int argc, char** argv) {
 
   // auto node = std::make_shared<voxblox::SimpleTsdfVisualizer>();
 
+  // horrible hack to compile visualize server for now. @aakapatel fix CMake.
   auto node = std::make_shared<rclcpp::Node>("voxblox_vis_server");
   auto visualizer = std::make_shared<voxblox::SimpleTsdfVisualizer>(node);
   
