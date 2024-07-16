@@ -231,6 +231,11 @@ class TsdfServer {
     return tsdf_config;
   }
 
+  TsdfIntegratorBase::Config
+      tsdf_integrator_config;  // TODO: make these const and init in ctor header
+  TsdfMap::Config
+      tsdf_config;  // TODO: make these const and init in ctor header
+
  protected:
   /**
    * Gets the next pointcloud that has an available transform to process from
@@ -381,11 +386,6 @@ class TsdfServer {
 
   /// Current transform corrections from ICP.
   Transformation icp_corrected_transform_;
-
-  TsdfIntegratorBase::Config
-      tsdf_integrator_config;  // TODO: make these const and init in ctor header
-  TsdfMap::Config
-      tsdf_config;  // TODO: make these const and init in ctor header
 };
 
 }  // namespace voxblox

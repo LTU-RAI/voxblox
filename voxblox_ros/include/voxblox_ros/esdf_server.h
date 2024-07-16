@@ -159,7 +159,8 @@ class EsdfServer : public TsdfServer {
   float traversability_radius_;
   bool incremental_update_;
   int num_subscribers_esdf_map_;
-
+  // EsdfMap::Config esdf_config;
+  // EsdfIntegrator::Config esdf_integrator_config;
   // @aakapatel : run build test for esdf_server_node
   rclcpp::Node::SharedPtr node_;
 
