@@ -4,6 +4,29 @@
 
 ![voxblox_small](https://cloud.githubusercontent.com/assets/5616392/15180357/536a8776-1781-11e6-8c1d-f2dfa34b1408.gif)
 
+# Migration to ROS2
+
+[@aakapatel : ESDF AND TSDF SERVERS HAVE BEEN MIGRATED TO ROS2. Tested on basement dataset.]
+
+Voxblox has been partly migrated to ROS2 in the `ros2` git branch.
+The migrated code was tested on Ubuntu 22.04 with ROS2 humble.
+A Dockerfile is also available for getting started quickly. 
+
+The code of the following Voxblox executables and their dependencies have been migrated to ROS2:
+
+- [x] tsdf_server_node
+- [x] esdf_server_node
+- [x] visualize_tsdf
+- [ ] intensity_server_node
+- [ ] voxblox_eval
+
+The following work still needs to be completed:
+
+- [ ] Migrate remaining executables to ROS2
+- [ ] Migrate tests to ROS2
+- [ ] Update documentation for ROS2
+
+
 Voxblox is a volumetric mapping library based mainly on Truncated Signed Distance Fields (TSDFs). It varies from other SDF libraries in the following ways:
  * CPU-only, can be run single-threaded or multi-threaded for some integrators
  * Support for multiple different layer types (containing different types of voxels)
@@ -19,25 +42,6 @@ Voxblox is a volumetric mapping library based mainly on Truncated Signed Distanc
 
 ![example_gif](http://i.imgur.com/2wLztFm.gif)
 
-# Migration to ROS2
-
-Voxblox has been partly migrated to ROS2 in the `ros2` git branch.
-The migrated code was tested on Ubuntu 22.04 with ROS2 humble.
-A Dockerfile is also available for getting started quickly. 
-
-The code of the following Voxblox executables and their dependencies have been migrated to ROS2:
-
-- [x] tsdf_server_node
-- [ ] esdf_server_node
-- [ ] intensity_server_node
-- [ ] visualize_tsdf
-- [ ] voxblox_eval
-
-The following work still needs to be completed:
-
-- [ ] Migrate remaining executables to ROS2
-- [ ] Migrate tests to ROS2
-- [ ] Update documentation for ROS2
 
 # Documentation
 * All voxblox documentation can be found on [our readthedocs page](https://voxblox.readthedocs.io/en/latest/index.html)
