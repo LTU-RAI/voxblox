@@ -46,6 +46,9 @@ TsdfServer::TsdfServer(rclcpp::Node::SharedPtr node)
   occupancy_marker_pub_ =
       node_->create_publisher<visualization_msgs::msg::MarkerArray>(
           "occupied_nodes", 1);
+  traversability_marker_pub_ =
+      node_->create_publisher<visualization_msgs::msg::MarkerArray>(
+          "traversability_voxel_map", 1);
   tsdf_slice_pub_ =
       node_->create_publisher<sensor_msgs::msg::PointCloud2>("tsdf_slice", 1);
 
@@ -494,6 +497,11 @@ void TsdfServer::publishTsdfOccupiedNodes() {
   createOccupancyBlocksFromTsdfLayer(tsdf_map_->getTsdfLayer(), world_frame_,
                                      &marker_array);
   occupancy_marker_pub_->publish(marker_array);
+  
+  visualization_msgs::msg::MarkerArray traversability_marker_array;
+  createOccupancyBlocksFromTsdfLayer(tsdf_map_->getTsdfLayer(), world_frame_,
+                                     &traversability_marker_array);
+  traversability_marker_pub_->publish(traversability_marker_array);
 }
 
 void TsdfServer::publishSlices() {

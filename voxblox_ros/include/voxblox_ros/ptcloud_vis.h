@@ -173,6 +173,118 @@ void createOccupancyBlocksFromLayer(
   marker_array->markers.push_back(block_marker);
 }
 
+template <typename VoxelType>
+void createOccupancyBlocksFromLayerTraversability(
+    const Layer<VoxelType>& layer,
+    const ShouldVisualizeVoxelFunctionType<VoxelType>& vis_function,
+    const std::string& frame_id,
+    visualization_msgs::msg::MarkerArray* marker_array) {
+  CHECK_NOTNULL(marker_array);
+  // Cache layer settings.
+  size_t vps = layer.voxels_per_side();
+  size_t num_voxels_per_block = vps * vps * vps;
+  FloatingPoint voxel_size = layer.voxel_size();
+
+  visualization_msgs::msg::Marker block_marker;
+  block_marker.header.frame_id = frame_id;
+  block_marker.ns = "traversability_voxels";
+  block_marker.id = 0;
+  block_marker.type = visualization_msgs::msg::Marker::CUBE_LIST;
+  block_marker.scale.x = block_marker.scale.y = block_marker.scale.z =
+      voxel_size;
+  block_marker.action = visualization_msgs::msg::Marker::ADD;
+
+  BlockIndexList blocks;
+  layer.getAllAllocatedBlocks(&blocks);
+  for (const BlockIndex& index : blocks) {
+    // Iterate over all voxels in said blocks.
+    const Block<VoxelType>& block = layer.getBlockByIndex(index);
+
+    for (size_t linear_index = 0; linear_index < num_voxels_per_block;
+         ++linear_index) {
+      Point coord = block.computeCoordinatesFromLinearIndex(linear_index);
+      const TsdfVoxel& voxel = block.getVoxelByLinearIndex(linear_index);
+      if (vis_function(block.getVoxelByLinearIndex(linear_index), coord)) {
+        geometry_msgs::msg::Point cube_center;
+        cube_center.x = coord.x();
+        cube_center.y = coord.y();
+        cube_center.z = coord.z();
+        block_marker.points.push_back(cube_center);
+        std_msgs::msg::ColorRGBA color_msg;
+
+        double h =
+            (1.0 -
+             std::min(std::max((voxel.traversability - 0.0f) / (255.0), 0.0),
+                      1.0)) *
+            0.8;
+
+        std_msgs::msg::ColorRGBA color;
+        color.a = 0.8;
+        // blend over HSV-values (more colors)
+
+        double s = 1.0;
+        double v = 1.0;
+
+        h -= floor(h);
+        h *= 6;
+        int i;
+        double m, n, f;
+
+        i = floor(h);
+        f = h - i;
+        if (!(i & 1)) f = 1 - f;  // if i is even
+        m = v * (1 - s);
+        n = v * (1 - s * f);
+
+        switch (i) {
+          case 6:
+          case 0:
+            color.r = v;
+            color.g = n;
+            color.b = m;
+            break;
+          case 1:
+            color.r = n;
+            color.g = v;
+            color.b = m;
+            break;
+          case 2:
+            color.r = m;
+            color.g = v;
+            color.b = n;
+            break;
+          case 3:
+            color.r = m;
+            color.g = n;
+            color.b = v;
+            break;
+          case 4:
+            color.r = n;
+            color.g = m;
+            color.b = v;
+            break;
+          case 5:
+            color.r = v;
+            color.g = m;
+            color.b = n;
+            break;
+          default:
+            color.r = 1;
+            color.g = 0.5;
+            color.b = 0.5;
+            break;
+        }
+
+        color_msg = color;
+
+        block_marker.colors.push_back(color_msg);
+        auto temp = block_marker.colors;
+      }
+    }
+  }
+  marker_array->markers.push_back(block_marker);
+}
+
 // /Short-hand functions for visualizing different types of voxels.
 inline bool visualizeNearSurfaceTsdfVoxels(const TsdfVoxel& voxel,
                                            const Point& /*coord*/,
@@ -433,6 +545,17 @@ inline void createOccupancyBlocksFromTsdfLayer(
     visualization_msgs::msg::MarkerArray* marker_array) {
   CHECK_NOTNULL(marker_array);
   createOccupancyBlocksFromLayer<TsdfVoxel>(
+      layer,
+      std::bind(visualizeOccupiedTsdfVoxels, std::placeholders::_1,
+                std::placeholders::_2, layer.voxel_size()),
+      frame_id, marker_array);
+}
+
+inline void createOccupancyBlocksFromTsdfLayerTraversability(
+    const Layer<TsdfVoxel>& layer, const std::string& frame_id,
+    visualization_msgs::msg::MarkerArray* marker_array) {
+  CHECK_NOTNULL(marker_array);
+  createOccupancyBlocksFromLayerTraversability<TsdfVoxel>(
       layer,
       std::bind(visualizeOccupiedTsdfVoxels, std::placeholders::_1,
                 std::placeholders::_2, layer.voxel_size()),

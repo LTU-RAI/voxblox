@@ -262,6 +262,8 @@ class TsdfServer {
   rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr tsdf_slice_pub_;
   rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr
       occupancy_marker_pub_;
+  rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr
+      traversability_marker_pub_;
   rclcpp::Publisher<geometry_msgs::msg::TransformStamped>::SharedPtr
       icp_transform_pub_;
 
