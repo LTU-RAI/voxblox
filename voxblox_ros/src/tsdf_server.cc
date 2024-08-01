@@ -238,6 +238,7 @@ void TsdfServer::processPointCloudMessageAndInsert(
 
   Pointcloud points_C;
   Colors colors;
+  Traversability traversability_values;
   timing::Timer ptcloud_timer("ptcloud_preprocess");
 
   // Convert differently depending on RGB or I type.
@@ -250,6 +251,8 @@ void TsdfServer::processPointCloudMessageAndInsert(
     pcl::PointCloud<pcl::PointXYZI> pointcloud_pcl;
     // pointcloud_pcl is modified below:
     pcl::fromROSMsg(*pointcloud_msg, pointcloud_pcl);
+    // assign traversability values from the intensity field.
+    assignTraversabilityValues(pointcloud_pcl, &traversability_values);
     convertPointcloud(pointcloud_pcl, color_map_, &points_C, &colors);
   } else {
     pcl::PointCloud<pcl::PointXYZ> pointcloud_pcl;
@@ -321,7 +324,8 @@ void TsdfServer::processPointCloudMessageAndInsert(
   }
 
   rclcpp::Time start = rclcpp::Clock().now();
-  integratePointcloud(T_G_C_refined, points_C, colors, is_freespace_pointcloud);
+  integratePointcloud(T_G_C_refined, points_C, colors, traversability_values,
+                      is_freespace_pointcloud);
   rclcpp::Time end = rclcpp::Clock().now();
   auto integrating_time = (start - end);
   if (verbose_) {
@@ -445,13 +449,13 @@ void TsdfServer::insertFreespacePointcloud(
   }
 }
 
-void TsdfServer::integratePointcloud(const Transformation& T_G_C,
-                                     const Pointcloud& ptcloud_C,
-                                     const Colors& colors,
-                                     const bool is_freespace_pointcloud) {
+void TsdfServer::integratePointcloud(
+    const Transformation& T_G_C, const Pointcloud& ptcloud_C,
+    const Colors& colors, const Traversability& traversability_values,
+    const bool is_freespace_pointcloud) {
   CHECK_EQ(ptcloud_C.size(), colors.size());
-  tsdf_integrator_->integratePointCloud(T_G_C, ptcloud_C, colors,
-                                        is_freespace_pointcloud);
+  tsdf_integrator_->integratePointCloud(
+      T_G_C, ptcloud_C, colors, traversability_values, is_freespace_pointcloud);
 }
 
 void TsdfServer::publishAllUpdatedTsdfVoxels() {

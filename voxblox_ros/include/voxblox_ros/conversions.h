@@ -139,6 +139,21 @@ inline void convertPointcloud(
                               pointcloud_pcl.points[i].z));
     colors->emplace_back(
         convertColor<PCLPoint>(pointcloud_pcl.points[i], color_map));
+
+  }
+}
+
+// Assign traversability values from intensity field. 
+inline void assignTraversabilityValues(
+    const typename pcl::PointCloud<pcl::PointXYZI>& pointcloud_pcl,
+    Traversability* traversabilitiy_values) {
+  traversabilitiy_values->reserve(pointcloud_pcl.size());
+  for (size_t i = 0; i < pointcloud_pcl.points.size(); ++i) {
+    if (!isPointFinite(pointcloud_pcl.points[i])) {
+      continue;
+    }
+    TraversabilityValue t_ = pointcloud_pcl.points[i].intensity;
+    traversabilitiy_values->emplace_back(t_);
   }
 }
 

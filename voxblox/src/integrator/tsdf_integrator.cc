@@ -239,10 +239,10 @@ float TsdfIntegratorBase::getVoxelWeight(const Point& point_C) const {
   return 0.0f;
 }
 
-void SimpleTsdfIntegrator::integratePointCloud(const Transformation& T_G_C,
-                                               const Pointcloud& points_C,
-                                               const Colors& colors,
-                                               const bool freespace_points) {
+void SimpleTsdfIntegrator::integratePointCloud(
+    const Transformation& T_G_C, const Pointcloud& points_C,
+    const Colors& colors, const Traversability& traversability_values,
+    const bool freespace_points) {
   timing::Timer integrate_timer("integrate/simple");
   CHECK_EQ(points_C.size(), colors.size());
 
@@ -251,9 +251,9 @@ void SimpleTsdfIntegrator::integratePointCloud(const Transformation& T_G_C,
 
   std::list<std::thread> integration_threads;
   for (size_t i = 0; i < config_.integrator_threads; ++i) {
-    integration_threads.emplace_back(&SimpleTsdfIntegrator::integrateFunction,
-                                     this, T_G_C, points_C, colors,
-                                     freespace_points, index_getter.get());
+    integration_threads.emplace_back(
+        &SimpleTsdfIntegrator::integrateFunction, this, T_G_C, points_C, colors,
+        traversability_values, freespace_points, index_getter.get());
   }
 
   for (std::thread& thread : integration_threads) {
@@ -266,17 +266,18 @@ void SimpleTsdfIntegrator::integratePointCloud(const Transformation& T_G_C,
   insertion_timer.Stop();
 }
 
-void SimpleTsdfIntegrator::integrateFunction(const Transformation& T_G_C,
-                                             const Pointcloud& points_C,
-                                             const Colors& colors,
-                                             const bool freespace_points,
-                                             ThreadSafeIndex* index_getter) {
+void SimpleTsdfIntegrator::integrateFunction(
+    const Transformation& T_G_C, const Pointcloud& points_C,
+    const Colors& colors, const Traversability& traversability_values,
+    const bool freespace_points, ThreadSafeIndex* index_getter) {
   DCHECK(index_getter != nullptr);
 
   size_t point_idx;
   while (index_getter->getNextIndex(&point_idx)) {
     const Point& point_C = points_C[point_idx];
     const Color& color = colors[point_idx];
+    const TraversabilityValue& traversability_value =
+        traversability_values[point_idx];
     bool is_clearing;
     if (!isPointValid(point_C, freespace_points, &is_clearing)) {
       continue;
@@ -299,15 +300,16 @@ void SimpleTsdfIntegrator::integrateFunction(const Transformation& T_G_C,
 
       const float weight = getVoxelWeight(point_C);
 
+      voxel->traversability = traversability_value;
       updateTsdfVoxel(origin, point_G, global_voxel_idx, color, weight, voxel);
     }
   }
 }
 
-void MergedTsdfIntegrator::integratePointCloud(const Transformation& T_G_C,
-                                               const Pointcloud& points_C,
-                                               const Colors& colors,
-                                               const bool freespace_points) {
+void MergedTsdfIntegrator::integratePointCloud(
+    const Transformation& T_G_C, const Pointcloud& points_C,
+    const Colors& colors, const Traversability& traversability_values,
+    const bool freespace_points) {
   timing::Timer integrate_timer("integrate/merged");
   CHECK_EQ(points_C.size(), colors.size());
 
@@ -485,11 +487,10 @@ void MergedTsdfIntegrator::integrateRays(
   insertion_timer.Stop();
 }
 
-void FastTsdfIntegrator::integrateFunction(const Transformation& T_G_C,
-                                           const Pointcloud& points_C,
-                                           const Colors& colors,
-                                           const bool freespace_points,
-                                           ThreadSafeIndex* index_getter) {
+void FastTsdfIntegrator::integrateFunction(
+    const Transformation& T_G_C, const Pointcloud& points_C,
+    const Colors& colors, const Traversability& traversability_values,
+    const bool freespace_points, ThreadSafeIndex* index_getter) {
   DCHECK(index_getter != nullptr);
 
   size_t point_idx;
@@ -499,6 +500,8 @@ void FastTsdfIntegrator::integrateFunction(const Transformation& T_G_C,
               .count() < config_.max_integration_time_s * 1000000)) {
     const Point& point_C = points_C[point_idx];
     const Color& color = colors[point_idx];
+    const TraversabilityValue& traversability_value =
+        traversability_values[point_idx];
     bool is_clearing;
     if (!isPointValid(point_C, freespace_points, &is_clearing)) {
       continue;
@@ -546,16 +549,17 @@ void FastTsdfIntegrator::integrateFunction(const Transformation& T_G_C,
           allocateStorageAndGetVoxelPtr(global_voxel_idx, &block, &block_idx);
 
       const float weight = getVoxelWeight(point_C);
+      voxel->traversability = traversability_value;
 
       updateTsdfVoxel(origin, point_G, global_voxel_idx, color, weight, voxel);
     }
   }
 }
 
-void FastTsdfIntegrator::integratePointCloud(const Transformation& T_G_C,
-                                             const Pointcloud& points_C,
-                                             const Colors& colors,
-                                             const bool freespace_points) {
+void FastTsdfIntegrator::integratePointCloud(
+    const Transformation& T_G_C, const Pointcloud& points_C,
+    const Colors& colors, const Traversability& traversability_values,
+    const bool freespace_points) {
   timing::Timer integrate_timer("integrate/fast");
   CHECK_EQ(points_C.size(), colors.size());
 
@@ -573,9 +577,9 @@ void FastTsdfIntegrator::integratePointCloud(const Transformation& T_G_C,
 
   std::list<std::thread> integration_threads;
   for (size_t i = 0; i < config_.integrator_threads; ++i) {
-    integration_threads.emplace_back(&FastTsdfIntegrator::integrateFunction,
-                                     this, T_G_C, points_C, colors,
-                                     freespace_points, index_getter.get());
+    integration_threads.emplace_back(
+        &FastTsdfIntegrator::integrateFunction, this, T_G_C, points_C, colors,
+        traversability_values, freespace_points, index_getter.get());
   }
 
   for (std::thread& thread : integration_threads) {
