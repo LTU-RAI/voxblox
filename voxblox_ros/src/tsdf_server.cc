@@ -499,7 +499,7 @@ void TsdfServer::publishTsdfOccupiedNodes() {
   occupancy_marker_pub_->publish(marker_array);
   
   visualization_msgs::msg::MarkerArray traversability_marker_array;
-  createOccupancyBlocksFromTsdfLayer(tsdf_map_->getTsdfLayer(), world_frame_,
+  createOccupancyBlocksFromTsdfLayerTraversability(tsdf_map_->getTsdfLayer(), world_frame_,
                                      &traversability_marker_array);
   traversability_marker_pub_->publish(traversability_marker_array);
 }
