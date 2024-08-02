@@ -230,7 +230,7 @@ void createOccupancyBlocksFromLayerTraversability(
         color_msg.b = 0.0f;
 
         // Alpha is set to fully opaque
-        color_msg.a = 1.0f;
+        color_msg.a = 0.6f;
 
         block_marker.colors.push_back(color_msg);
         auto temp = block_marker.colors;
