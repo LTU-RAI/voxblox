@@ -211,71 +211,26 @@ void createOccupancyBlocksFromLayerTraversability(
         cube_center.z = coord.z();
         block_marker.points.push_back(cube_center);
         std_msgs::msg::ColorRGBA color_msg;
-
-        double h =
-            (1.0 -
-             std::min(std::max((voxel.traversability - 0.0f) / (255.0), 0.0),
-                      1.0)) *
-            0.8;
-
-        std_msgs::msg::ColorRGBA color;
-        color.a = 0.8;
-        // blend over HSV-values (more colors)
-
-        double s = 1.0;
-        double v = 1.0;
-
-        h -= floor(h);
-        h *= 6;
-        int i;
-        double m, n, f;
-
-        i = floor(h);
-        f = h - i;
-        if (!(i & 1)) f = 1 - f;  // if i is even
-        m = v * (1 - s);
-        n = v * (1 - s * f);
-
-        switch (i) {
-          case 6:
-          case 0:
-            color.r = v;
-            color.g = n;
-            color.b = m;
-            break;
-          case 1:
-            color.r = n;
-            color.g = v;
-            color.b = m;
-            break;
-          case 2:
-            color.r = m;
-            color.g = v;
-            color.b = n;
-            break;
-          case 3:
-            color.r = m;
-            color.g = n;
-            color.b = v;
-            break;
-          case 4:
-            color.r = n;
-            color.g = m;
-            color.b = v;
-            break;
-          case 5:
-            color.r = v;
-            color.g = m;
-            color.b = n;
-            break;
-          default:
-            color.r = 1;
-            color.g = 0.5;
-            color.b = 0.5;
-            break;
+        float voxel_traversability = voxel.traversability;
+        if (voxel_traversability < 0.0f) {
+          voxel_traversability = 0.0f;
+        } else if (voxel_traversability > 255.0f) {
+          voxel_traversability = 255.0f;
         }
 
-        color_msg = color;
+        // Normalize traversability to [0, 1]
+        float normalized_traversability = voxel_traversability / 255.0f;
+        // Red color decreases as traversability increases
+        color_msg.r = 1.0f - normalized_traversability;
+
+        // Green color increases as traversability increases
+        color_msg.g = normalized_traversability;
+
+        // Blue color is set to zero since we are using red-green gradient
+        color_msg.b = 0.0f;
+
+        // Alpha is set to fully opaque
+        color_msg.a = 1.0f;
 
         block_marker.colors.push_back(color_msg);
         auto temp = block_marker.colors;
