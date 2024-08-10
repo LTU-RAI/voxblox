@@ -493,15 +493,20 @@ void TsdfServer::publishTsdfSurfacePoints() {
 
 void TsdfServer::publishTsdfOccupiedNodes() {
   // Create a pointcloud with distance = intensity.
-  visualization_msgs::msg::MarkerArray marker_array;
-  createOccupancyBlocksFromTsdfLayer(tsdf_map_->getTsdfLayer(), world_frame_,
-                                     &marker_array);
-  occupancy_marker_pub_->publish(marker_array);
   
-  visualization_msgs::msg::MarkerArray traversability_marker_array;
-  createOccupancyBlocksFromTsdfLayerTraversability(tsdf_map_->getTsdfLayer(), world_frame_,
-                                     &traversability_marker_array);
-  traversability_marker_pub_->publish(traversability_marker_array);
+  // @aakapatel : TODO >> The OccupancyLayer below takes forever to form for 5-10 cm voxel size 
+  // 1. Port this to CUDA >> ptcloud_vis.h for reference. 
+  // 2. Test with STAGE interface to query traversability close to robot position. If query time is consitent then ignore for now. 
+
+  // visualization_msgs::msg::MarkerArray marker_array;
+  // createOccupancyBlocksFromTsdfLayer(tsdf_map_->getTsdfLayer(), world_frame_,
+  //                                    &marker_array);
+  // occupancy_marker_pub_->publish(marker_array);
+  
+  // visualization_msgs::msg::MarkerArray traversability_marker_array;
+  // createOccupancyBlocksFromTsdfLayerTraversability(tsdf_map_->getTsdfLayer(), world_frame_,
+  //                                    &traversability_marker_array);
+  // traversability_marker_pub_->publish(traversability_marker_array);
 }
 
 void TsdfServer::publishSlices() {
