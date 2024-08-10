@@ -149,7 +149,11 @@ void createOccupancyBlocksFromLayer(
   block_marker.action = visualization_msgs::msg::Marker::ADD;
 
   BlockIndexList blocks;
+  rclcpp::Time start = rclcpp::Clock().now();
   layer.getAllAllocatedBlocks(&blocks);
+  rclcpp::Time end = rclcpp::Clock().now();
+  auto integrating_time = (end - start);
+  std::cout << "Allocated blocks get time --> " << integrating_time.seconds() << " sec" << std::endl;
   for (const BlockIndex& index : blocks) {
     // Iterate over all voxels in said blocks.
     const Block<VoxelType>& block = layer.getBlockByIndex(index);
@@ -170,6 +174,10 @@ void createOccupancyBlocksFromLayer(
       }
     }
   }
+  rclcpp::Time end_f = rclcpp::Clock().now();
+
+  auto for_loop_time = (end_f - start);
+  std::cout << "Block iter for loop time --> " << for_loop_time.seconds() << " sec" << std::endl;
   marker_array->markers.push_back(block_marker);
 }
 
