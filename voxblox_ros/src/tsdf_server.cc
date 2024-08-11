@@ -136,6 +136,17 @@ TsdfServer::TsdfServer(rclcpp::Node::SharedPtr node)
       "publish_map", std::bind(&TsdfServer::publishTsdfMapCallback, this,
                                std::placeholders::_1, std::placeholders::_2));
 
+  publish_occupancy_map_srv_ = node_->create_service<std_srvs::srv::Empty>(
+    "publish_occupancy_map",
+      std::bind(&TsdfServer::publishOccupancyMapCallback, this,
+                std::placeholders::_1, std::placeholders::_2));
+
+  publish_traversability_map_srv_ = node_->create_service<std_srvs::srv::Empty>(
+    "publish_traversability_map",
+      std::bind(&TsdfServer::publishTraversabilityMapCallback, this,
+                std::placeholders::_1, std::placeholders::_2));
+
+  
   // If set, use a timer to progressively integrate the mesh.
   double update_mesh_every_n_sec = 1.0;
   update_mesh_every_n_sec = node_->declare_parameter("update_mesh_every_n_sec",
@@ -493,20 +504,30 @@ void TsdfServer::publishTsdfSurfacePoints() {
 
 void TsdfServer::publishTsdfOccupiedNodes() {
   // Create a pointcloud with distance = intensity.
-  
-  // @aakapatel : TODO >> The OccupancyLayer below takes forever to form for 5-10 cm voxel size 
-  // 1. Port this to CUDA >> ptcloud_vis.h for reference. 
-  // 2. Test with STAGE interface to query traversability close to robot position. If query time is consitent then ignore for now. 
 
-  // visualization_msgs::msg::MarkerArray marker_array;
-  // createOccupancyBlocksFromTsdfLayer(tsdf_map_->getTsdfLayer(), world_frame_,
-  //                                    &marker_array);
-  // occupancy_marker_pub_->publish(marker_array);
-  
-  // visualization_msgs::msg::MarkerArray traversability_marker_array;
-  // createOccupancyBlocksFromTsdfLayerTraversability(tsdf_map_->getTsdfLayer(), world_frame_,
-  //                                    &traversability_marker_array);
-  // traversability_marker_pub_->publish(traversability_marker_array);
+  // @aakapatel : TODO >> The OccupancyLayer below takes forever to form for
+  // 5-10 cm voxel size
+  // 1. Port this to CUDA >> ptcloud_vis.h for reference.
+  // 2. Test with STAGE interface to query traversability close to robot
+  // position. If query time is consitent then ignore for now.
+
+  visualization_msgs::msg::MarkerArray marker_array;
+  createOccupancyBlocksFromTsdfLayer(tsdf_map_->getTsdfLayer(), world_frame_,
+                                     &marker_array);
+  occupancy_marker_pub_->publish(marker_array);
+}
+
+void TsdfServer::publishTraversabilityNodes() {
+  // @aakapatel : TODO >> The OccupancyLayer below takes forever to form for
+  // 5-10 cm voxel size
+  // 1. Port this to CUDA >> ptcloud_vis.h for reference.
+  // 2. Test with STAGE interface to query traversability close to robot
+  // position. If query time is consitent then ignore for now.
+
+  visualization_msgs::msg::MarkerArray traversability_marker_array;
+  createOccupancyBlocksFromTsdfLayerTraversability(
+      tsdf_map_->getTsdfLayer(), world_frame_, &traversability_marker_array);
+  traversability_marker_pub_->publish(traversability_marker_array);
 }
 
 void TsdfServer::publishSlices() {
@@ -554,11 +575,14 @@ void TsdfServer::publishPointclouds() {
   // pointclouds, updated points, and occupied points.
   publishAllUpdatedTsdfVoxels();
   publishTsdfSurfacePoints();
-  publishTsdfOccupiedNodes();
   if (publish_slices_) {
     publishSlices();
   }
 }
+
+void TsdfServer::publishOccupancyMap() { publishTsdfOccupiedNodes(); }
+
+void TsdfServer::publishTraversabilityMap() { publishTraversabilityNodes(); }
 
 void TsdfServer::updateMesh() {
   if (verbose_) {
@@ -679,6 +703,18 @@ void TsdfServer::publishPointcloudsCallback(
     std_srvs::srv::Empty::Request::SharedPtr /*request*/,
     std_srvs::srv::Empty::Response::SharedPtr /*response*/) {  // NOLINT
   publishPointclouds();
+}
+
+void TsdfServer::publishOccupancyMapCallback(
+    std_srvs::srv::Empty::Request::SharedPtr /*request*/,
+    std_srvs::srv::Empty::Response::SharedPtr /*response*/) {  // NOLINT
+  publishOccupancyMap();
+}
+
+void TsdfServer::publishTraversabilityMapCallback(
+    std_srvs::srv::Empty::Request::SharedPtr /*request*/,
+    std_srvs::srv::Empty::Response::SharedPtr /*response*/) {  // NOLINT
+  publishTraversabilityMap();
 }
 
 void TsdfServer::publishTsdfMapCallback(

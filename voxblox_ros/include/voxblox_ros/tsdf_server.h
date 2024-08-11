@@ -64,6 +64,7 @@ class TsdfServer {
   void publishAllUpdatedTsdfVoxels();
   void publishTsdfSurfacePoints();
   void publishTsdfOccupiedNodes();
+  void publishTraversabilityNodes();
 
   virtual void publishSlices();
   /// Incremental update.
@@ -72,6 +73,8 @@ class TsdfServer {
   virtual bool generateMesh();
   // Publishes all available pointclouds.
   virtual void publishPointclouds();
+  virtual void publishOccupancyMap();
+  virtual void publishTraversabilityMap();
   // Publishes the complete map
   virtual void publishMap(bool reset_remote_map = false);
   virtual bool saveMap(const std::string& file_path);
@@ -93,6 +96,12 @@ class TsdfServer {
       std_srvs::srv::Empty::Request::SharedPtr request,     // NOLINT
       std_srvs::srv::Empty::Response::SharedPtr response);  // NOLINT
   void publishTsdfMapCallback(
+      std_srvs::srv::Empty::Request::SharedPtr request,     // NOLINT
+      std_srvs::srv::Empty::Response::SharedPtr response);  // NOLINT
+  void publishOccupancyMapCallback(
+      std_srvs::srv::Empty::Request::SharedPtr request,     // NOLINT
+      std_srvs::srv::Empty::Response::SharedPtr response);  // NOLINT
+  void publishTraversabilityMapCallback(
       std_srvs::srv::Empty::Request::SharedPtr request,     // NOLINT
       std_srvs::srv::Empty::Response::SharedPtr response);  // NOLINT
 
@@ -279,6 +288,8 @@ class TsdfServer {
   rclcpp::Service<voxblox_msgs::srv::FilePath>::SharedPtr save_map_srv_;
   rclcpp::Service<voxblox_msgs::srv::FilePath>::SharedPtr load_map_srv_;
   rclcpp::Service<std_srvs::srv::Empty>::SharedPtr publish_pointclouds_srv_;
+  rclcpp::Service<std_srvs::srv::Empty>::SharedPtr publish_occupancy_map_srv_;
+  rclcpp::Service<std_srvs::srv::Empty>::SharedPtr publish_traversability_map_srv_;
   rclcpp::Service<std_srvs::srv::Empty>::SharedPtr publish_tsdf_map_srv_;
 
   /// Tools for broadcasting TFs.
