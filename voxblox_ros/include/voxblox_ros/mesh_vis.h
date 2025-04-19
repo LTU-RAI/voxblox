@@ -117,7 +117,7 @@ inline void heightColorFromVertex(const Point& vertex,
   double mapped_height = std::min<FloatingPoint>(
       std::max<FloatingPoint>((vertex.z() - min_z) / (max_z - min_z), 0.0),
       1.0);
-  colorVoxbloxToMsg(rainbowColorMap(mapped_height), color_msg);
+  colorVoxbloxToMsg(rainbowColorMap(mapped_height), &color_msg);
 }
 
 inline std_msgs::msg::ColorRGBA getVertexColor(const Mesh::ConstPtr& mesh,
@@ -126,7 +126,7 @@ inline std_msgs::msg::ColorRGBA getVertexColor(const Mesh::ConstPtr& mesh,
   std_msgs::msg::ColorRGBA color_msg;
   switch (color_mode) {
     case kColor:
-      colorVoxbloxToMsg(mesh->colors[index], color_msg);
+      colorVoxbloxToMsg(mesh->colors[index], &color_msg);
       break;
     case kHeight:
       heightColorFromVertex(mesh->vertices[index], color_msg);

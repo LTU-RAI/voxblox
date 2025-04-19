@@ -93,6 +93,7 @@ TsdfServer::TsdfServer(rclcpp::Node::SharedPtr node)
 
   std::string method("merged");
   method = node_->declare_parameter("method", method);
+  std::cout << "Integration method : " << method << std::endl;
   if (method.compare("simple") == 0) {
     tsdf_integrator_.reset(new SimpleTsdfIntegrator(
         tsdf_integrator_config, tsdf_map_->getTsdfLayerPtr()));
@@ -137,16 +138,15 @@ TsdfServer::TsdfServer(rclcpp::Node::SharedPtr node)
                                std::placeholders::_1, std::placeholders::_2));
 
   publish_occupancy_map_srv_ = node_->create_service<std_srvs::srv::Empty>(
-    "publish_occupancy_map",
+      "publish_occupancy_map",
       std::bind(&TsdfServer::publishOccupancyMapCallback, this,
                 std::placeholders::_1, std::placeholders::_2));
 
   publish_traversability_map_srv_ = node_->create_service<std_srvs::srv::Empty>(
-    "publish_traversability_map",
+      "publish_traversability_map",
       std::bind(&TsdfServer::publishTraversabilityMapCallback, this,
                 std::placeholders::_1, std::placeholders::_2));
 
-  
   // If set, use a timer to progressively integrate the mesh.
   double update_mesh_every_n_sec = 1.0;
   update_mesh_every_n_sec = node_->declare_parameter("update_mesh_every_n_sec",
@@ -512,21 +512,20 @@ void TsdfServer::publishTsdfOccupiedNodes() {
   // position. If query time is consitent then ignore for now.
 
   visualization_msgs::msg::MarkerArray marker_array;
-  createOccupancyBlocksFromTsdfLayer(tsdf_map_->getTsdfLayer(), world_frame_,
-                                     &marker_array);
+  createOccupancyBlocksFromTsdfLayer(tsdf_map_->getTsdfLayer(), world_frame_, tsdf_map_->getTsdfLayer().voxel_size() * 0.5, &marker_array);
   occupancy_marker_pub_->publish(marker_array);
 }
 
 void TsdfServer::publishTraversabilityNodes() {
-  // @aakapatel : TODO >> The OccupancyLayer below takes forever to form for
-  // 5-10 cm voxel size
+  // @aakapatel : TODO >> The TraversabilityBlock below takes forever to form
+  // for 5-10 cm voxel size
   // 1. Port this to CUDA >> ptcloud_vis.h for reference.
   // 2. Test with STAGE interface to query traversability close to robot
   // position. If query time is consitent then ignore for now.
 
   visualization_msgs::msg::MarkerArray traversability_marker_array;
   createOccupancyBlocksFromTsdfLayerTraversability(
-      tsdf_map_->getTsdfLayer(), world_frame_, &traversability_marker_array);
+    tsdf_map_->getTsdfLayer(), world_frame_, tsdf_map_->getTsdfLayer().voxel_size() * 0.5, &traversability_marker_array);
   traversability_marker_pub_->publish(traversability_marker_array);
 }
 
@@ -578,6 +577,10 @@ void TsdfServer::publishPointclouds() {
   if (publish_slices_) {
     publishSlices();
   }
+  // Only for debug. Do not forget to comment the publisher below otherwise will
+  // tank the compute time.
+  publishTsdfOccupiedNodes();
+  publishTraversabilityNodes();
 }
 
 void TsdfServer::publishOccupancyMap() { publishTsdfOccupiedNodes(); }

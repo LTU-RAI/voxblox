@@ -149,7 +149,7 @@ void createOccupancyBlocksFromLayer(
   block_marker.action = visualization_msgs::msg::Marker::ADD;
 
   BlockIndexList blocks;
-  rclcpp::Time start = rclcpp::Clock().now();
+  // rclcpp::Time start = rclcpp::Clock().now();
   layer.getAllAllocatedBlocks(&blocks);
   for (const BlockIndex& index : blocks) {
     // Iterate over all voxels in said blocks.
@@ -165,16 +165,16 @@ void createOccupancyBlocksFromLayer(
         cube_center.z = coord.z();
         block_marker.points.push_back(cube_center);
         std_msgs::msg::ColorRGBA color_msg;
-        colorVoxbloxToMsg(rainbowColorMap((coord.z() + 2.5) / 5.0), color_msg);
+        colorVoxbloxToMsg(rainbowColorMap((coord.z() + 2.5) / 5.0), &color_msg);
         block_marker.colors.push_back(color_msg);
-        auto temp = block_marker.colors;
+        // auto temp = block_marker.colors;
       }
     }
   }
   rclcpp::Time end = rclcpp::Clock().now();
 
-  auto for_loop_time = (end - start);
-  std::cout << "Block iter for loop time --> " << for_loop_time.seconds() << " sec" << std::endl;
+  // auto for_loop_time = (end - start);
+  // std::cout << "Block iter for loop time --> " << for_loop_time.seconds() << " sec" << std::endl;
   marker_array->markers.push_back(block_marker);
 }
 
@@ -217,7 +217,8 @@ void createOccupancyBlocksFromLayerTraversability(
         block_marker.points.push_back(cube_center);
         std_msgs::msg::ColorRGBA color_msg;
         float voxel_traversability = voxel.traversability;
-
+        
+        // colorVoxbloxToMsg(rainbowColorMap((coord.z() + 2.5) / 5.0), &color_msg);
         // Normalize traversability to range [0, 1]
         double norm_traversability = std::min(
             std::max((voxel_traversability - 0.0f) / 255.0f, 0.0f), 1.0f);
@@ -286,7 +287,7 @@ void createOccupancyBlocksFromLayerTraversability(
         color_msg = color;
 
         block_marker.colors.push_back(color_msg);
-        auto temp = block_marker.colors;
+        // auto temp = block_marker.colors;
       }
     }
   }
@@ -548,25 +549,50 @@ inline void createDistancePointcloudFromEsdfLayerSlice(
       pointcloud);
 }
 
+// inline void createOccupancyBlocksFromTsdfLayer(
+//     const Layer<TsdfVoxel>& layer, const std::string& frame_id,
+//     visualization_msgs::msg::MarkerArray* marker_array) {
+//   CHECK_NOTNULL(marker_array);
+//   createOccupancyBlocksFromLayer<TsdfVoxel>(
+//       layer,
+//       std::bind(visualizeOccupiedTsdfVoxels, std::placeholders::_1,
+//                 std::placeholders::_2, layer.voxel_size()),
+//       frame_id, marker_array);
+// }
+
 inline void createOccupancyBlocksFromTsdfLayer(
     const Layer<TsdfVoxel>& layer, const std::string& frame_id,
+    const FloatingPoint occupied_voxel_min_distance,
     visualization_msgs::msg::MarkerArray* marker_array) {
   CHECK_NOTNULL(marker_array);
   createOccupancyBlocksFromLayer<TsdfVoxel>(
       layer,
       std::bind(visualizeOccupiedTsdfVoxels, std::placeholders::_1,
-                std::placeholders::_2, layer.voxel_size()),
+                std::placeholders::_2, occupied_voxel_min_distance),
       frame_id, marker_array);
 }
 
+
+// inline void createOccupancyBlocksFromTsdfLayerTraversability(
+//     const Layer<TsdfVoxel>& layer, const std::string& frame_id,
+//     visualization_msgs::msg::MarkerArray* marker_array) {
+//   CHECK_NOTNULL(marker_array);
+//   createOccupancyBlocksFromLayerTraversability<TsdfVoxel>(
+//       layer,
+//       std::bind(visualizeOccupiedTsdfVoxels, std::placeholders::_1,
+//                 std::placeholders::_2, layer.voxel_size()),
+//       frame_id, marker_array);
+// }
+
 inline void createOccupancyBlocksFromTsdfLayerTraversability(
     const Layer<TsdfVoxel>& layer, const std::string& frame_id,
+    const FloatingPoint occupied_voxel_min_distance,
     visualization_msgs::msg::MarkerArray* marker_array) {
   CHECK_NOTNULL(marker_array);
   createOccupancyBlocksFromLayerTraversability<TsdfVoxel>(
       layer,
       std::bind(visualizeOccupiedTsdfVoxels, std::placeholders::_1,
-                std::placeholders::_2, layer.voxel_size()),
+                std::placeholders::_2, occupied_voxel_min_distance),
       frame_id, marker_array);
 }
 
