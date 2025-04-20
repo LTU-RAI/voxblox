@@ -243,7 +243,7 @@ void createOccupancyBlocksFromLayerTraversability(
         n = v * (1 - s * f);
 
         std_msgs::msg::ColorRGBA color;
-        color.a = 0.8;  // Set alpha
+        color.a = 1.0;  // Set alpha
 
         switch (i) {
           case 6:

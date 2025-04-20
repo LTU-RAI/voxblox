@@ -152,7 +152,7 @@ inline void assignTraversabilityValues(
     if (!isPointFinite(pointcloud_pcl.points[i])) {
       continue;
     }
-    TraversabilityValue t_ = pointcloud_pcl.points[i].intensity;
+    TraversabilityValue t_ = 255 * pointcloud_pcl.points[i].intensity;
     traversabilitiy_values->emplace_back(t_);
   }
 }

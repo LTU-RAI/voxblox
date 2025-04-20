@@ -494,6 +494,7 @@ void TsdfServer::publishTsdfSurfacePoints() {
   createSurfacePointcloudFromTsdfLayer(tsdf_map_->getTsdfLayer(),
                                        surface_distance_thresh, &pointcloud);
 
+  // createPointcloudFromTsdfLayer(tsdf_map_->getTsdfLayer(), &pointcloud);
   pointcloud.header.frame_id = world_frame_;
 
   sensor_msgs::msg::PointCloud2 pointcloud_message;
@@ -512,7 +513,7 @@ void TsdfServer::publishTsdfOccupiedNodes() {
   // position. If query time is consitent then ignore for now.
 
   visualization_msgs::msg::MarkerArray marker_array;
-  createOccupancyBlocksFromTsdfLayer(tsdf_map_->getTsdfLayer(), world_frame_, tsdf_map_->getTsdfLayer().voxel_size() * 0.5, &marker_array);
+  createOccupancyBlocksFromTsdfLayer(tsdf_map_->getTsdfLayer(), world_frame_, tsdf_map_->getTsdfLayer().voxel_size(), &marker_array);
   occupancy_marker_pub_->publish(marker_array);
 }
 
