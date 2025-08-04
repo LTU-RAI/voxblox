@@ -36,34 +36,46 @@ TsdfServer::TsdfServer(rclcpp::Node::SharedPtr node)
       getMeshIntegratorConfigFromRosParam();
 
   getServerConfigFromRosParam();
+  
+  std::string pcl_input;
+  node_->declare_parameter("pointcloud_input", "pointcloud");
+  node_->get_parameter("pointcloud_input", pcl_input);
+  
+  // Get namespace and node name
+  std::string robot_ns = node_->get_namespace();  // e.g., "/husky"
+  std::string node_ns = node_->get_name();     // e.g., "tsdf_server"
+
+  // Ensure namespace ends with no trailing slash
+  if (!robot_ns.empty() && robot_ns.back() == '/')
+    robot_ns.pop_back();
 
   // Advertise topics.
   surface_pointcloud_pub_ =
       node_->create_publisher<sensor_msgs::msg::PointCloud2>(
-          "surface_pointcloud", 1);
+          robot_ns + "/" + node_ns + "/surface_pointcloud", 1);
   tsdf_pointcloud_pub_ = node_->create_publisher<sensor_msgs::msg::PointCloud2>(
-      "tsdf_pointcloud", 1);
+      robot_ns + "/" + node_ns + "/tsdf_pointcloud", 1);
   occupancy_marker_pub_ =
       node_->create_publisher<visualization_msgs::msg::MarkerArray>(
-          "occupied_nodes", 1);
+          robot_ns + "/" + node_ns + "/occupied_nodes", 1);
   traversability_marker_pub_ =
       node_->create_publisher<visualization_msgs::msg::MarkerArray>(
-          "traversability_voxel_map", 1);
+          robot_ns + "/" + node_ns + "/traversability_voxel_map", 1);
   tsdf_slice_pub_ =
-      node_->create_publisher<sensor_msgs::msg::PointCloud2>("tsdf_slice", 1);
+      node_->create_publisher<sensor_msgs::msg::PointCloud2>(robot_ns + "/" + node_ns + "/tsdf_slice", 1);
 
   pointcloud_sub_ = node_->create_subscription<sensor_msgs::msg::PointCloud2>(
-      "pointcloud", rclcpp::QoS(pointcloud_queue_size_).best_effort(),
+      pcl_input, rclcpp::QoS(pointcloud_queue_size_).best_effort(),
       std::bind(&TsdfServer::insertPointcloud, this, std::placeholders::_1));
 
-  mesh_pub_ = node_->create_publisher<voxblox_msgs::msg::Mesh>("mesh", 1);
+  mesh_pub_ = node_->create_publisher<voxblox_msgs::msg::Mesh>(robot_ns + "/" + node_ns + "/mesh", 1);
 
   // Publishing/subscribing to a layer from another node (when using this as
   // a library, for example within a planner).
   tsdf_map_pub_ =
-      node_->create_publisher<voxblox_msgs::msg::Layer>("tsdf_map_out", 1);
+      node_->create_publisher<voxblox_msgs::msg::Layer>(robot_ns + "/" + node_ns + "/tsdf_map_out", 1);
   tsdf_map_sub_ = node_->create_subscription<voxblox_msgs::msg::Layer>(
-      "tsdf_map_in", 1,
+      robot_ns + "/" + node_ns + "/tsdf_map_in", 1,
       std::bind(&TsdfServer::tsdfMapCallback, this, std::placeholders::_1));
   publish_tsdf_map_ =
       node_->declare_parameter("publish_tsdf_map", publish_tsdf_map_);
@@ -118,32 +130,32 @@ TsdfServer::TsdfServer(rclcpp::Node::SharedPtr node)
   // Advertise services.
 
   generate_mesh_srv_ = node_->create_service<std_srvs::srv::Empty>(
-      "generate_mesh", std::bind(&TsdfServer::generateMeshCallback, this,
+      robot_ns + "/" + node_ns + "/generate_mesh", std::bind(&TsdfServer::generateMeshCallback, this,
                                  std::placeholders::_1, std::placeholders::_2));
   clear_map_srv_ = node_->create_service<std_srvs::srv::Empty>(
-      "clear_map", std::bind(&TsdfServer::clearMapCallback, this,
+      robot_ns + "/" + node_ns + "/clear_map", std::bind(&TsdfServer::clearMapCallback, this,
                              std::placeholders::_1, std::placeholders::_2));
   save_map_srv_ = node_->create_service<voxblox_msgs::srv::FilePath>(
-      "save_map", std::bind(&TsdfServer::saveMapCallback, this,
+      robot_ns + "/" + node_ns + "/save_map", std::bind(&TsdfServer::saveMapCallback, this,
                             std::placeholders::_1, std::placeholders::_2));
   load_map_srv_ = node_->create_service<voxblox_msgs::srv::FilePath>(
-      "load_map", std::bind(&TsdfServer::loadMapCallback, this,
+      robot_ns + "/" + node_ns + "/load_map", std::bind(&TsdfServer::loadMapCallback, this,
                             std::placeholders::_1, std::placeholders::_2));
   publish_pointclouds_srv_ = node_->create_service<std_srvs::srv::Empty>(
-      "publish_pointclouds",
+      robot_ns + "/" + node_ns + "/publish_pointclouds",
       std::bind(&TsdfServer::publishPointcloudsCallback, this,
                 std::placeholders::_1, std::placeholders::_2));
   publish_tsdf_map_srv_ = node_->create_service<std_srvs::srv::Empty>(
-      "publish_map", std::bind(&TsdfServer::publishTsdfMapCallback, this,
+      robot_ns + "/" + node_ns + "/publish_map", std::bind(&TsdfServer::publishTsdfMapCallback, this,
                                std::placeholders::_1, std::placeholders::_2));
 
   publish_occupancy_map_srv_ = node_->create_service<std_srvs::srv::Empty>(
-      "publish_occupancy_map",
+      robot_ns + "/" + node_ns + "/publish_occupancy_map",
       std::bind(&TsdfServer::publishOccupancyMapCallback, this,
                 std::placeholders::_1, std::placeholders::_2));
 
   publish_traversability_map_srv_ = node_->create_service<std_srvs::srv::Empty>(
-      "publish_traversability_map",
+      robot_ns + "/" + node_ns + "/publish_traversability_map",
       std::bind(&TsdfServer::publishTraversabilityMapCallback, this,
                 std::placeholders::_1, std::placeholders::_2));
 

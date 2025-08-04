@@ -28,20 +28,30 @@ EsdfServer::EsdfServer(rclcpp::Node::SharedPtr node)
 }
 
 void EsdfServer::setupRos() {
+
+
+  // Get namespace and node name
+  std::string robot_ns = node_->get_namespace();  // e.g., "/husky"
+  std::string node_ns = node_->get_name();     // e.g., "tsdf_server"
+
+  // Ensure namespace ends with no trailing slash
+  if (!robot_ns.empty() && robot_ns.back() == '/')
+    robot_ns.pop_back();
+
   // Set up publisher.
   esdf_pointcloud_pub_ = node_->create_publisher<sensor_msgs::msg::PointCloud2>(
-      "esdf_pointcloud", 1);
+      robot_ns + "/" + node_ns + "/esdf_pointcloud", 1);
   esdf_slice_pub_ =
-      node_->create_publisher<sensor_msgs::msg::PointCloud2>("esdf_slice", 1);
+      node_->create_publisher<sensor_msgs::msg::PointCloud2>(robot_ns + "/" + node_ns + "/esdf_slice", 1);
   traversable_pub_ =
-      node_->create_publisher<sensor_msgs::msg::PointCloud2>("traversable", 1);
+      node_->create_publisher<sensor_msgs::msg::PointCloud2>(robot_ns + "/" + node_ns + "/traversable", 1);
 
   esdf_map_pub_ =
-      node_->create_publisher<voxblox_msgs::msg::Layer>("esdf_map_out", 1);
+      node_->create_publisher<voxblox_msgs::msg::Layer>(robot_ns + "/" + node_ns + "/esdf_map_out", 1);
 
   // Set up subscriber.
   esdf_map_sub_ = node_->create_subscription<voxblox_msgs::msg::Layer>(
-      "esdf_map_in", 1,
+      robot_ns + "/" + node_ns + "/esdf_map_in", 1,
       std::bind(&EsdfServer::esdfMapCallback, this, std::placeholders::_1));
 
   // Whether to clear each new pose as it comes in, and then set a sphere
